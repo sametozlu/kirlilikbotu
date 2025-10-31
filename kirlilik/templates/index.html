@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="tr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kira ♻️ | Evde Atık Azaltma Asistanı</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="manifest" href="/static/manifest.json" />
+    <meta name="theme-color" content="#0b1020" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  </head>
+  <body>
+    <div class="bg"></div>
+    <header class="site-header">
+      <div class="brand">
+        <div class="logo">♻️</div>
+        <div>
+          <h1>Kira</h1>
+          <p class="subtitle">Evde Atık Azaltma Asistanı</p>
+        </div>
+      </div>
+      <nav class="actions">
+        <a class="pill" href="#how">Nasıl Çalışır?</a>
+        <a class="pill strong" href="#chat">Hadi konuşalım</a>
+      </nav>
+    </header>
+
+    <main class="container">
+      <section class="hero">
+        <h2>Gençler için sürdürülebilir yaşam – küçük adımlar, büyük etki. ✨</h2>
+        <p>
+          {{ welcome[0] }} {{ welcome[1] }}
+        </p>
+        <div class="quick-row">
+          {% for q in quick_replies %}
+          <button class="chip" data-payload="{{ q.payload }}">{{ q.title }}</button>
+          {% endfor %}
+        </div>
+      </section>
+
+      <section id="chat" class="chat">
+        <div id="chat-window" class="chat-window">
+          <div class="msg bot">
+            <div class="avatar">♻️</div>
+            <div class="bubble">
+              <p>Merhaba! Ben Kira. Sana özel önerilerle evde atık miktarını azaltmana yardım edebilirim.</p>
+              <p class="muted">Hızlı başlamak için üstteki öneri düğmelerini kullan.</p>
+            </div>
+          </div>
+        </div>
+
+        <form id="chat-form" class="chat-form" autocomplete="off">
+          <input id="user-input" type="text" placeholder="Bir şey yaz... Örn: Nereden başlamalıyım?" />
+          <button type="submit" class="send">Gönder</button>
+        </form>
+      </section>
+
+      <section id="how" class="how">
+        <h3>Nasıl çalışır?</h3>
+        <ul>
+          <li><strong>Yaz veya tıkla:</strong> Sohbete yazabilir ya da hazır öneri düğmelerine tıklayabilirsin.</li>
+          <li><strong>Hızlı kazanımlar:</strong> Günlük ipuçları, alışveriş tüyoları, kompost ve geri dönüşüm rehberi.</li>
+          <li><strong>Mini planlar:</strong> Haftalık yapılabilir küçük görevlerle sürdürülebilirlik.</li>
+        </ul>
+      </section>
+
+      <section id="survey" class="card">
+        <h3>Mini Anket</h3>
+        <p class="muted">5 soru ile seni tanıyalım; önerileri profiline göre yapalım.</p>
+        <button id="open-survey" class="pill strong">Ankete Başla</button>
+      </section>
+
+      <div id="survey-modal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal-content">
+          <h3>Mini Anket</h3>
+          <form id="survey-form">
+            <label>1) En çok hangi atık çıkıyor?
+              <select name="topWaste">
+                <option>Plastik ambalaj</option>
+                <option>Cam</option>
+                <option>Kağıt/karton</option>
+                <option>Organik</option>
+              </select>
+            </label>
+            <label>2) Yaşam alanın?
+              <select name="living">
+                <option>Yurt</option>
+                <option>Aile evi</option>
+                <option>Paylaşımlı ev</option>
+                <option>Tek başıma</option>
+              </select>
+            </label>
+            <label>3) Bütçe tercihi?
+              <select name="budget">
+                <option>Düşük</option>
+                <option>Orta</option>
+                <option>Esnek</option>
+              </select>
+            </label>
+            <label>4) Zorluk: alışveriş mi ev mi?
+              <select name="pain">
+                <option>Alışveriş</option>
+                <option>Ev düzeni</option>
+                <option>Motivasyon</option>
+              </select>
+            </label>
+            <label>5) Hedefin?
+              <select name="goal">
+                <option>Plastik azalt</option>
+                <option>Kompost başlat</option>
+                <option>Geri dönüşümü oturt</option>
+              </select>
+            </label>
+            <div class="row">
+              <button type="button" id="close-survey" class="pill">İptal</button>
+              <button type="submit" class="pill strong">Kaydet</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <section id="goals" class="card">
+        <h3>Hedef ve İlerleme</h3>
+        <div class="goals-row">
+          <input id="new-goal" placeholder="Yeni hedef yaz..." />
+          <button id="add-goal" class="pill">Ekle</button>
+        </div>
+        <ul id="goal-list" class="goal-list"></ul>
+        <div class="progress-wrap">
+          <div class="progress-bar"><span id="progress-fill" style="width:0%"></span></div>
+          <div class="progress-meta"><span id="progress-text">0% tamamlandı</span> • Seri: <span id="streak">0</span> gün</div>
+        </div>
+        <div id="badges" class="badges"></div>
+      </section>
+
+      <section id="plans" class="card">
+        <h3>Hızlı Plan Şablonları</h3>
+        <div class="quick-row">
+          <button class="chip plan" data-plan="exam">Sınav Haftası</button>
+          <button class="chip plan" data-plan="dorm">Yurtta Yaşam</button>
+          <button class="chip plan" data-plan="family">Aile Evi</button>
+        </div>
+      </section>
+
+      <section id="map" class="card">
+        <h3>Yakın Geri Dönüşüm Noktaları</h3>
+        <button id="find-recycling" class="pill">Yakınımı Bul</button>
+        <div id="leaflet-map" class="map"></div>
+      </section>
+
+      <section id="classify" class="card">
+        <h3>Görsel Tanıma (Beta)</h3>
+        <input type="file" id="waste-photo" accept="image/*" />
+        <div id="classify-result" class="muted">Foto seç, hangi kutuya atılır tahmin edelim.</div>
+      </section>
+
+      <section id="tips" class="card">
+        <h3>Hızlı İpuçları</h3>
+        <div class="cards" id="tip-cards"></div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>
+        Kira © {{ ("now" | date) if false else '' }} Sürdürülebilir yaşam için birlikte. 🌱
+      </p>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+    <script src="/static/script.js"></script>
+  </body>
+  </html>
+
+
